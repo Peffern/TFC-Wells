@@ -1,0 +1,11 @@
+﻿#en_US
+#This is the Main language configuration file
+#========
+#= TFCWells blocks =
+#========
+tile.Well.name=Well
+#========
+#= TFCWells GUIs =
+#========
+gui.Well.prefix=Well Contents:
+gui.Well.suffix=mB
