@@ -2,6 +2,7 @@ package com.peffern.wells;
 
 import com.bioxx.tfc.api.TFCItems;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -54,6 +55,8 @@ public class TFCWells
 		
 		//crafting
 		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(well,1), "ABA","CDC","AEA",'A',"plankWood",'B',"itemSaw",'C',"ingotIron",'D',TFCItems.rope, 'E', TFCItems.woodenBucketEmpty));
+
+		FMLCommonHandler.instance().bus().register(new com.peffern.wells.CraftingHandler());
 
 	}
 	
