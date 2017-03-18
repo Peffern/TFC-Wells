@@ -9,3 +9,7 @@ tile.Well.name=Well
 #========
 gui.Well.prefix=Well Contents:
 gui.Well.suffix=mB
+#========
+$= TFCWells Items =
+#========
+item.wellHiddenRopeDummyItem.name=Dummy Item - Well Rope - Do Not Use

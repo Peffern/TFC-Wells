@@ -26,7 +26,8 @@ import net.minecraft.world.World;
 public class BlockWell extends BlockTerraContainer
 {
 	/** Textures */
-	private IIcon[] wellTextures;
+	protected IIcon emptyIcon;
+	protected static IIcon ropeIcon;
 	
 	/**
 	 * Constructs a BlockWell
@@ -56,8 +57,7 @@ public class BlockWell extends BlockTerraContainer
 			{
 				//handle TE and update texture
 				TEWell te = (TEWell)world.getTileEntity(x, y, z);
-				int meta = te.handleInteraction(world, entityplayer, this);
-				world.setBlockMetadataWithNotify(x, y, z, meta, 3);
+				te.handleInteraction(world, entityplayer, this);
 				return true;
 			}
 			
@@ -111,46 +111,14 @@ public class BlockWell extends BlockTerraContainer
 		return canBlockStay(world,x,y,z);
 	}
 	
-	@Override
-	public IIcon getIcon(int i, int j)
-	{
-		switch(i)
-		{
-			//bottom
-			case 0:
-			{
-				return wellTextures[0];
-			}
-			//top
-			case 1:
-			{
-				return wellTextures[0];
-			}
-			//sides
-			default:
-			{
-				//get appropriate texture
-				if(j >= 0 && j < wellTextures.length)
-					return wellTextures[j];
-				else
-				{
-					//bad metadata
-					System.out.println("Invalid Well Block Metadata");
-					return wellTextures[0];
-				}
-			}
-		}
-	}
 	
 	@Override
 	public void registerBlockIcons(IIconRegister iconRegisterer)
 	{
 		super.registerBlockIcons(iconRegisterer);
-		wellTextures = new IIcon[4];
-		wellTextures[0] = iconRegisterer.registerIcon(TFCWells.MODID + ":" + "Well Empty");
-		wellTextures[1] = iconRegisterer.registerIcon(TFCWells.MODID + ":" + "Well Bucket");
-		wellTextures[2] = iconRegisterer.registerIcon(TFCWells.MODID + ":" + "Well Rope");
-		wellTextures[3] = iconRegisterer.registerIcon(TFCWells.MODID + ":" + "Well Water");
+		this.emptyIcon = iconRegisterer.registerIcon(TFCWells.MODID + ":" + "Well Empty");
+		ropeIcon = iconRegisterer.registerIcon(TFCWells.MODID + ":" + "Well Rope");
+		this.blockIcon = this.emptyIcon;
 	}
 	
 	@Override
@@ -193,12 +161,6 @@ public class BlockWell extends BlockTerraContainer
 	public AxisAlignedBB getCollisionBoundingBoxFromPool(World world, int x, int y, int z)
 	{
 		return super.getCollisionBoundingBoxFromPool(world, x, y, z);
-	}
-	
-	@Override
-	public int getRenderType()
-	{
-		return super.getRenderType();
 	}
 
 	@Override

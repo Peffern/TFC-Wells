@@ -10,6 +10,7 @@ import net.minecraftforge.oredict.OreDictionary;
 
 import java.util.List;
 
+//thanks Bunsan
 public class CraftingHandler
 {
     @SubscribeEvent

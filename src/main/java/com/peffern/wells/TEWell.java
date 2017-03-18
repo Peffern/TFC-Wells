@@ -8,10 +8,14 @@ import com.bioxx.tfc.TileEntities.NetworkTileEntity;
 import com.bioxx.tfc.api.TFCFluids;
 import com.bioxx.tfc.api.TFCItems;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.Packet;
+import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidContainerRegistry;
@@ -32,11 +36,13 @@ public class TEWell extends NetworkTileEntity
 	/** Current well depth (in blocks) */
 	private int depth = 0;
 	/** Well State*/
-	private WellState wellState = READY;
+	protected WellState wellState = READY;
 	/** Internal ItemStack */
-	private ItemStack item = null;
+	protected ItemStack item = null;
 	/** Current validation counter (in ticks) */
 	private int validationCheck = 60;
+	/** avoid rendering too early */
+	private boolean shouldRender = false;
 
 	/**
 	 * Handle refilling and validation
@@ -58,6 +64,7 @@ public class TEWell extends NetworkTileEntity
 			//every time the validation counter hits 0
 			if (validationCheck <= 0)
 			{
+				shouldRender = true;
 				//verify the hole is still good (also updates the depth)
 				if (((BlockWell) worldObj.getBlock(xCoord, yCoord, zCoord)).canBlockStay(worldObj, xCoord, yCoord, zCoord))
 				{
@@ -73,10 +80,12 @@ public class TEWell extends NetworkTileEntity
 					broadcastPacketInRange(createDataPacket(nbt));
 					this.worldObj.func_147479_m(xCoord, yCoord, zCoord);*/
 
+
 				}
 				else //hole broke so break the well
 				{
 					worldObj.setBlockToAir(xCoord, yCoord, zCoord);
+					this.dropItem(worldObj, xCoord,yCoord,zCoord);
 					worldObj.spawnEntityInWorld(new EntityItem(worldObj, xCoord, yCoord, zCoord, new ItemStack(TFCWells.well, 1)));
 				}
 				
@@ -87,6 +96,7 @@ public class TEWell extends NetworkTileEntity
 			
 			
 		}
+		
 	}
 	
 	/**
@@ -96,7 +106,7 @@ public class TEWell extends NetworkTileEntity
 	 * @param block the well Block
 	 * @return
 	 */
-	protected int handleInteraction(World world, EntityPlayer player, BlockWell block)
+	protected void handleInteraction(World world, EntityPlayer player, BlockWell block)
 	{
 		//get the tile entity and read the contents to the player
 		//detect bucket
@@ -201,8 +211,9 @@ public class TEWell extends NetworkTileEntity
 				break;
 			}
 		}
-		//get the texture metadata
-		return wellState.getBlockMeta();
+		
+		worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+				
 	}
 	
 	/**
@@ -310,6 +321,13 @@ public class TEWell extends NetworkTileEntity
 		nbttagcompound.setFloat("rate", rate);
 		nbttagcompound.setFloat("size", size);
 		nbttagcompound.setInteger("depth", depth);
+		if(item != null)
+		{
+			NBTTagCompound itemTag = item.writeToNBT(new NBTTagCompound());
+			nbttagcompound.setTag("item", itemTag);
+
+		}
+		nbttagcompound.setInteger("state", wellState.ordinal());
 	}
 	
 	@Override
@@ -317,6 +335,12 @@ public class TEWell extends NetworkTileEntity
 	{
 		super.readFromNBT(nbttagcompound);
 		//read well spec from nbt
+		if(nbttagcompound.hasKey("item"))
+		{
+			item = ItemStack.loadItemStackFromNBT(nbttagcompound.getCompoundTag("item"));
+		}
+		else
+			item = null;
 		if(nbttagcompound.hasKey("contents"))
 			contents = nbttagcompound.getFloat("contents");
 		if(nbttagcompound.hasKey("rate"))
@@ -325,6 +349,8 @@ public class TEWell extends NetworkTileEntity
 			size = nbttagcompound.getFloat("size");
 		if(nbttagcompound.hasKey("depth"))
 			depth = nbttagcompound.getInteger("depth");
+		if(nbttagcompound.hasKey("state"))
+			wellState = WellState.values()[nbttagcompound.getInteger("state")];
 	}
 	
 	@Override
@@ -335,7 +361,6 @@ public class TEWell extends NetworkTileEntity
 	@Override
 	public void handleDataPacket(NBTTagCompound nbt) 
 	{
-		
 	}
 
 	@Override
@@ -343,4 +368,15 @@ public class TEWell extends NetworkTileEntity
 	{
 		
 	}
+	
+	@Override
+	public Packet getDescriptionPacket() {
+		 NBTTagCompound nbtTag = new NBTTagCompound();
+		 this.writeToNBT(nbtTag);
+		 return new S35PacketUpdateTileEntity(this.xCoord, this.yCoord, this.zCoord, 1, nbtTag);
+		 }
+		 @Override
+		 public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity packet) {
+		 readFromNBT(packet.func_148857_g());
+		 }
 }

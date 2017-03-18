@@ -2,13 +2,17 @@ package com.peffern.wells;
 
 import com.bioxx.tfc.api.TFCItems;
 
+import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
+import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraft.block.Block;
+import net.minecraft.client.renderer.texture.IIconRegister;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 
@@ -26,6 +30,9 @@ public class TFCWells
 	/** Mod instance Singleton */
 	@Instance(TFCWells.MODID)
 	public static TFCWells instance;
+	
+	@SidedProxy(clientSide = "com.peffern.wells.ClientProxy", serverSide = "com.peffern.wells.CommonProxy")
+	public static CommonProxy proxy;
 
 	/** Mod ID String */
 	public static final String MODID = "tfcwells";
@@ -39,6 +46,9 @@ public class TFCWells
 	/** The Well Block*/
 	public static Block well;
 	
+	/** hidden well rope item */
+	protected static Item wellRope;
+	
 	/**
 	 * Mod setup and item registration
 	 * @param e initialization event
@@ -49,15 +59,25 @@ public class TFCWells
 		//setup blocks
 		well = new BlockWell().setBlockName("Well").setHardness(10);
 		
+		wellRope = new Item()
+		{
+			@Override
+			public void registerIcons(IIconRegister registerer)
+			{
+				this.itemIcon = registerer.registerIcon(TFCWells.MODID + ":" + "wellRope");
+			}
+		}.setUnlocalizedName("wellHiddenRopeDummyItem");
+		GameRegistry.registerItem(wellRope, wellRope.getUnlocalizedName());
+		
 		//registration
-		GameRegistry.registerTileEntity(TEWell.class, "Well");
+		proxy.registerTileEntities();
 		GameRegistry.registerBlock(well, ItemBlockWell.class, "Well");
 		
 		//crafting
 		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(well,1), "ABA","CDC","AEA",'A',"plankWood",'B',"itemSaw",'C',"ingotIron",'D',TFCItems.rope, 'E', TFCItems.woodenBucketEmpty));
 
-		FMLCommonHandler.instance().bus().register(new com.peffern.wells.CraftingHandler());
-
+		FMLCommonHandler.instance().bus().register(new CraftingHandler());
+		
 	}
 	
 	
