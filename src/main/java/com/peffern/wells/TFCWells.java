@@ -41,7 +41,7 @@ public class TFCWells
 	public static final String MODNAME = "TFC Wells";
 	
 	/** Mod Version */
-	public static final String VERSION = "1.0";
+	public static final String VERSION = "1.1";
 	
 	/** The Well Block*/
 	public static Block well;
