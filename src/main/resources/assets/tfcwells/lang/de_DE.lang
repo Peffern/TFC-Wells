@@ -1,0 +1,15 @@
+#de_DE
+#This is the German language configuration file
+#========
+#= TFCWells blocks =
+#========
+tile.Well.name=Brunnen
+#========
+#= TFCWells GUIs =
+#========
+gui.Well.prefix=Brunneninhalt:
+gui.Well.suffix=mB
+#========
+$= TFCWells Items =
+#========
+item.wellHiddenRopeDummyItem.name=Testgegenstand - Brunnenseil - Nicht benutzen
